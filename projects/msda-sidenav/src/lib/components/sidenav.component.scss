@@ -1,0 +1,84 @@
+.side-nav {
+  width: 422px;
+  .header {
+      margin: 0px auto;
+      max-width: 90%;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      img {
+          cursor: pointer;
+      }
+      mat-icon {
+          color: #56636c;
+      }
+  }
+  .apps {
+      width: 100%;
+      margin: 0px auto;
+      max-width: 90%;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      .sub-title {
+          margin-top: 18px;
+          text-align: left;
+          font: normal normal 14px/30px 'Helvetica Neue';
+          letter-spacing: 0px;
+          color: #000000;
+          opacity: 1;
+      }
+      .sub-divider {
+          margin-top: 25px;
+          margin-bottom: 45px;
+      }
+      h3 {
+          font-size: 16px;
+          font: normal normal 16px/30px 'Helvetica Neue LT GEO 55 Roman Caps';
+          letter-spacing: 0px;
+          color: #000000;
+          text-transform: uppercase;
+          opacity: 1;
+      }
+      .applications {
+          margin-top: 24px;
+          cursor: pointer;
+          p {
+              margin: auto 0px !important;
+              font: 400 14px/20px Helvetica Neue;
+              letter-spacing: normal;
+          }
+          img {
+              width: 36px;
+              height: 36px;
+              margin-right: 17px;
+          }
+      }
+
+      .disabled {
+          color: #cccccc !important;
+          cursor: auto !important;
+          img {
+              opacity: 0.5;
+          }
+      }
+  }
+}
+.headerText {
+  display: flex;
+  flex-direction: row;
+  cursor: pointer !important;
+  margin: 0 !important;
+  mat-icon{
+    margin-top: 3px;
+    color:#56636C
+  }
+p {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-left: 26px !important;
+  text-align: left;
+  font: normal normal  14px/30px Helvetica Neue;
+  letter-spacing: 0px;
+  color: #000000;
+  opacity: 1;
+}
+}

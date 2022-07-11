@@ -1,0 +1,31 @@
+<div class="side-nav">
+  <div class="header" fxLayout="row" fxLayoutAlign="space-between center">
+    <img [src]="logo" alt="">
+    <button mat-icon-button class="white" (click)='close()'>
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <mat-divider></mat-divider>
+  <div class="apps">
+
+    <h3 class="headerText" *ngIf="isPrivate" (click)="backButtonClick('apps')">
+      <mat-icon>arrow_back</mat-icon>
+      <p class="uppercase">{{lang == 'en'?'Return to apps.gov.ge':'apps.gov.ge-ზე დაბრუნება'}}
+      </p>
+    </h3>
+
+    <h3 class="headerText" *ngIf="!isPrivate" (click)="backButtonClick('ms')">
+      <mat-icon>arrow_back</mat-icon>
+      <p class="uppercase">{{lang == 'en' ? 'Return to Citizens Portal':'მოქალაქეთა პორტალზე დაბრუნება'}}
+      </p>
+    </h3>
+
+    <mat-divider class="sub-divider"></mat-divider>
+    <div class="applications" fxLayout="row" fxLayoutAlign="start center" *ngFor="let item of applications[userType]"
+      [ngClass]="{'disabled':item.disabled}" (click)="go(item)">
+      <img [src]="imagesSourceUrl + (item.img || '/assets/imgs/logos/'+item.abbreviation.toUpperCase() + '.svg')"
+        alt="">
+      <p class="mb-0">{{ lang == 'en' ? item.nameEn : item.name }}</p>
+    </div>
+  </div>
+</div>
