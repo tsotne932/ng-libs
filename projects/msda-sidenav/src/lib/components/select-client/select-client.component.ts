@@ -23,30 +23,45 @@ export class SelectClientComponent implements OnInit {
       raised: true,
       click: async (form: FormGroup) => {
         this.selected = form.get('client')?.value;
-        if (this.selected) {
-          await this.service.setSessionClient(this.selected).toPromise();
+        try {
+          if (this.selected) {
+            await this.service.setSessionClient(this.selected).toPromise();
+          }
+          const selectedPosition = form.get('position')?.value;
+
+          if (selectedPosition) {
+            await this.service.changeSelectedPosition(selectedPosition).toPromise();
+          }
           this.dialogRef.close(this.selected);
+
+        } catch (err) {
+          console.log(err)
         }
+
+
       },
       disabled: (form: FormGroup) => {
         return form.invalid;
       }
     },
     {
-      label: 'გასვლა',
+      label: 'დახურვა',
       color: 'primary',
       raised: false,
       show: this.showLogoutBtn,
       click: async (form: FormGroup) => {
-        await this.service.logout().toPromise();
         this.closeDialog();
       },
       disabled: () => false
     }
   ]
 
-  constructor(public dialogRef: MatDialogRef<SelectClientComponent>, private service: SideNavService, @Inject(MAT_DIALOG_DATA) data: { clients: any[] }) {
+  setHrPosition: boolean = false;
+  position: any;
+  clientPosition: any = {};
+  constructor(public dialogRef: MatDialogRef<SelectClientComponent>, private service: SideNavService, @Inject(MAT_DIALOG_DATA) data: { clients: any[], setHrPosition: boolean }) {
     this.clients = data.clients || [];
+    this.setHrPosition = data.setHrPosition || false;
   }
 
   ngOnInit(): void {
@@ -58,12 +73,32 @@ export class SelectClientComponent implements OnInit {
     if (!selectedClientId) this.showLogoutBtn = true;
 
     this.form = new FormGroup({
-      client: new FormControl(selectedClientId)
+      client: new FormControl(selectedClientId),
+      position: new FormControl()
     })
+
+    if (this.setHrPosition) {
+      this.getPosition();
+    }
+
+  }
+
+  async getPosition() {
+    this.position = await this.service.currentStatusNewOfEmployee().toPromise();
+    if (this.position) {
+      this.position.forEach((info: any) => {
+        if (!this.clientPosition[info.employee.clientId]) this.clientPosition[info.employee.clientId] = [info]
+        else this.clientPosition[info.employee.clientId].push(info);
+      })
+    }
+    this.form.get('position')?.setValue(this.position ? this.position[0] : null)
   }
 
   closeDialog() {
     this.dialogRef.close();
   }
 
+  get clientId() {
+    return this.form.get('client')?.value
+  }
 }

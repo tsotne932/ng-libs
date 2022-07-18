@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { ModuleWithProviders, NgModule, Type } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
-import { MsdaSidenavComponent } from './components/msda-sidenav.component';
 import { SelectClientComponent } from './components/select-client/select-client.component';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -12,6 +11,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatButtonModule } from '@angular/material/button';
 import { HttpClientModule } from '@angular/common/http';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { MsdaSidenavComponent } from './components/msda-sidenav.component';
 
 export interface SidenavConfig {
   imagesSourceUrl?: string;
@@ -21,8 +21,9 @@ export interface SidenavConfig {
 
 @NgModule({
   declarations: [
-    MsdaSidenavComponent,
-    SelectClientComponent
+
+    SelectClientComponent,
+    MsdaSidenavComponent
   ],
   imports: [
     CommonModule,

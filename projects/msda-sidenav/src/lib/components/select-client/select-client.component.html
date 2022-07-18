@@ -18,7 +18,21 @@
         </mat-form-field>
       </div>
     </div>
-
+    <div class="fields form-row" *ngIf="setHrPosition && clientPosition">
+      <div>
+        <div class="field-label-container" fxLayout="column" fxLayoutAlign="center" fxFlex="33">
+          <p>აირჩიეთ თანამდებობა</p>
+        </div>
+        <mat-form-field fxFlex appearance="outline">
+          <mat-select formControlName="position">
+            <mat-option *ngFor="let p of clientPosition[clientId]" [value]="p">
+              {{p.organizationName}} -
+              {{p.positionName}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
     <div fxLayout='row' fxLayoutAlign="end" class="actions" *ngIf="actions.length">
       <div *ngFor="let action of actions">
         <button mat-button *ngIf="!action.raised" [color]="action.color" [disabled]="action.disabled(form)"

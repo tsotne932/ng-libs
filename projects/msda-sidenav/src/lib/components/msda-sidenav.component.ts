@@ -15,11 +15,13 @@ interface Application {
   img: string;
   url: string;
   disabled: boolean;
+  setHrPosition: boolean;
 }
 enum UserType {
   private = 'private',
   public = 'public'
 }
+
 @Component({
   selector: 'msda-sidenav',
   templateUrl: './sidenav.component.html',
@@ -76,6 +78,7 @@ export class MsdaSidenavComponent implements OnInit {
   }
   _user: any;
   @Input() set user(user: any) {
+    this._user = user;
     if (user && user.userType == 'EMPLOYEE') {
       this.userType = UserType.private;
       if (user.selected.clientId) this.selectedClientId = user.selected.clientId;
@@ -84,14 +87,18 @@ export class MsdaSidenavComponent implements OnInit {
         Object.keys(client.applications || {}).forEach(key => {
           this.userApps[key] = true;
           client.id = +id;
-          if (this.userAppClients[key]) this.userAppClients[key].push(client);
-          else this.userAppClients[key] = [client]
+          if (!this.userAppClients[key]) this.userAppClients[key] = {};
+          this.userAppClients[key][client.id] = client;
         })
       }
     }
+
     this.loadApps();
   }
 
+  get user() {
+    return this.user;
+  }
   private _isPrivate: boolean | undefined;
   constructor(private _sideNav: SideNavService, private _dialog: MatDialog) {
     this.imagesSourceUrl = MsdaSidenavModule.imagesSourceUrl;
@@ -103,9 +110,8 @@ export class MsdaSidenavComponent implements OnInit {
 
   async ngOnInit() {
     await this._sideNav.loadApps();
-    if (!this._user) {
-      this.loadApps();
-    }
+    this.loadApps();
+
   }
 
   _setPrivate() {
@@ -127,9 +133,13 @@ export class MsdaSidenavComponent implements OnInit {
           if (app.metaJson[this.userType] && app.metaJson[this.userType].url) app.url = MsdaSidenavModule.env == 'production' ? app.metaJson[this.userType].url : app.metaJson[this.userType].urlStaging;
           if (app.metaJson[this.userType] && app.metaJson[this.userType].name) app.name = app.metaJson[this.userType].name;
           if (app.metaJson[this.userType] && app.metaJson[this.userType].nameEn) app.nameEn = app.metaJson[this.userType].nameEn;
+          if (app.metaJson[this.userType]) app.setHrPosition = app.metaJson[this.userType].setHrPosition || false;
         }
-        if (this.isPrivate)
+        if (this.isPrivate) {
           app.disabled = !this.userApps[app.abbreviation];
+
+        }
+
       } catch (err) {
         console.log(err);
       }
@@ -144,24 +154,32 @@ export class MsdaSidenavComponent implements OnInit {
     this._sideNav.close();
   }
 
-  go(item: Application) {
+  async go(item: Application) {
     if (item.disabled || !item.url) return;
-    if (this.userType == UserType.private) this._goPrivate(item);
+    if (this.userType == UserType.private) await this._goPrivate(item);
     else this._goPublic(item);
   }
 
 
   _goPrivate(item: Application) {
+
     if (this.userAppClients[item.abbreviation]) {
-      if (this.userAppClients[item.abbreviation].length == 1 && this.userAppClients[item.abbreviation][0].id == this.selectedClientId) {
+      const keys = Object.keys(this.userAppClients[item.abbreviation]);
+      if (keys.length == 1 && keys[0] == this.selectedClientId) {
+
+
         this._navigate(item.url, this.selectedClientId || undefined, item.id);
       }
       else {
+
+
+
         this._dialog.open(SelectClientComponent, {
           width: '761px',
-          height: '252px',
+          // height: '252px',
           data: {
-            clients: [...this.userAppClients[item.abbreviation].values()]
+            clients: [...Object.values(this.userAppClients[item.abbreviation])],
+            setHrPosition: item.setHrPosition
           }
         }).afterClosed().subscribe((clientId: any) => {
           if (clientId) {
