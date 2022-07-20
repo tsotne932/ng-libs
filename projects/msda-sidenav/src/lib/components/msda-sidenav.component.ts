@@ -165,15 +165,11 @@ export class MsdaSidenavComponent implements OnInit {
 
     if (this.userAppClients[item.abbreviation]) {
       const keys = Object.keys(this.userAppClients[item.abbreviation]);
-      if (keys.length == 1 && keys[0] == this.selectedClientId) {
-
+      if (keys.length == 1 && keys[0] == this.selectedClientId && !item.setHrPosition) {
 
         this._navigate(item.url, this.selectedClientId || undefined, item.id);
       }
       else {
-
-
-
         this._dialog.open(SelectClientComponent, {
           width: '761px',
           // height: '252px',
