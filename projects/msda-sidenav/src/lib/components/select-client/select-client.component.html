@@ -6,7 +6,7 @@
 
   <form *ngIf="form" [formGroup]="form" fxLayout="column" fxLayoutAlign="space-between" class="dynamic-form">
     <div class="fields form-row">
-      <div>
+      <div fxFlex fxLayout="row">
         <div class="field-label-container" fxLayout="column" fxLayoutAlign="center" fxFlex="33">
           <p>აირჩიეთ კლიენტი</p>
         </div>
@@ -19,7 +19,7 @@
       </div>
     </div>
     <div class="fields form-row" *ngIf="setHrPosition && clientPosition">
-      <div>
+      <div fxFlex fxLayout="row">
         <div class="field-label-container" fxLayout="column" fxLayoutAlign="center" fxFlex="33">
           <p>აირჩიეთ თანამდებობა</p>
         </div>

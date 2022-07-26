@@ -112,6 +112,7 @@ export class MsdaSidenavComponent implements OnInit {
           if (app.metaJson[this.userType] && app.metaJson[this.userType].name) app.name = app.metaJson[this.userType].name;
           if (app.metaJson[this.userType] && app.metaJson[this.userType].nameEn) app.nameEn = app.metaJson[this.userType].nameEn;
           if (app.metaJson[this.userType]) app.setHrPosition = app.metaJson[this.userType].setHrPosition || false;
+          if (app.metaJson[this.userType]) app.orderPriority = app.metaJson[this.userType].orderPriority || 1000;
         }
         if (this.isPrivate) {
           app.disabled = !this.userApps[app.abbreviation];
@@ -123,8 +124,8 @@ export class MsdaSidenavComponent implements OnInit {
       }
       return app;
     })
-    this.applications[UserType.private] = apps.filter(app => app.metaJson && this.applicationTypes[UserType.private].indexOf(app.type) > -1 && app.metaJson[UserType.private] && !app.metaJson[UserType.private].hidden)
-    this.applications[UserType.public] = apps.filter(app => app.metaJson && this.applicationTypes[UserType.public].indexOf(app.type) > -1 && app.metaJson[UserType.public] && !app.metaJson[UserType.public].hidden)
+    this.applications[UserType.private] = apps.filter(app => app.metaJson && this.applicationTypes[UserType.private].indexOf(app.type) > -1 && app.metaJson[UserType.private] && !app.metaJson[UserType.private].hidden).sort((a, b) => a.orderPriority - b.orderPriority)
+    this.applications[UserType.public] = apps.filter(app => app.metaJson && this.applicationTypes[UserType.public].indexOf(app.type) > -1 && app.metaJson[UserType.public] && !app.metaJson[UserType.public].hidden).sort((a, b) => a.orderPriority - b.orderPriority)
 
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "msda-sidenav",
-  "version": "0.4.16",
+  "version": "0.4.17",
   "peerDependencies": {
     "@angular/common": "^12.2.13",
     "@angular/core": "^12.2.13",
