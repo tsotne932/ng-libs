@@ -13,6 +13,7 @@ import { MsdaSidenavModule } from "../msda-sidenav.module";
 )
 export class SideNavService {
   applications: any[] = [];
+  links: any = {};
 
   private _opened: BehaviorSubject<any> = new BehaviorSubject(false);
 
@@ -25,7 +26,10 @@ export class SideNavService {
   async loadApps() {
     try {
       const { result: { data } } = await this._http.get<{ result: { data: any } }>(`/api/um/v3/applications/all`).toPromise();
-      this.applications = data;
+      if (data) {
+        this.applications = data.apps;
+        this.links = data.links;
+      }
     } catch (err) {
     }
   }

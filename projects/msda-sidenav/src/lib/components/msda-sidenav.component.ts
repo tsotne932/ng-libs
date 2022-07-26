@@ -45,31 +45,8 @@ export class MsdaSidenavComponent implements OnInit {
   }
   selectedClientId = null;
   subscription!: Subscription;
-  manualApps: any = [
-    {
-      abbreviation: 'TTC_PARK',
-      type: 'PUBLIC',
-      meta: `{
-        "private": {
-            "imgUrl": "",
-            "url": "",
-            "name": "",
-            "hidden": true
-        },
-        "public": {
-          "imgUrl": "",
-          "url": "https://goriparking.ge/",
-          "name": "პარკირება (გორი)",
-          "nameEn":"MS PARKING (GORI)",
-          "hidden": false
-        }
-    }`
-    }
-  ]
-  links: any = {
-    apps: { production: 'https://apps.msda.ge', staging: 'https://apps-staging.msda.ge', development: 'https://apps-staging.msda.ge', training: 'https://apps-training.msda.ge' },
-    ms: { production: 'https://ms.gov.ge', staging: 'https://ms-staging.gov.ge', development: 'https://ms-staging.gov.ge', training: 'https://ms-training.gov.ge' },
-  };
+
+  links: any = {};
   @Input() set isPrivate(val: boolean) {
     this._isPrivate = val;
     MsdaSidenavModule.isPrivate = this._isPrivate;
@@ -124,7 +101,8 @@ export class MsdaSidenavComponent implements OnInit {
 
   async loadApps() {
     let apps = [...this._sideNav.applications];
-    if (!this.isPrivate) apps.push(...this.manualApps);
+    if (this._sideNav.links)
+      this.links = this._sideNav.links;
     apps = apps.map(app => {
       try {
         if (app.meta) {
