@@ -1,11 +1,8 @@
 {
   "name": "msda-sidenav",
-  "version": "0.4.18",
+  "version": "0.4.22",
   "peerDependencies": {
-    "@angular/common": "^12.2.13",
-    "@angular/core": "^12.2.13",
-    "@angular/material": "^12.2.13",
-    "@angular/flex-layout": "^12.0.0-beta.35"
+
   },
   "dependencies": {
     "tslib": "^2.3.0"

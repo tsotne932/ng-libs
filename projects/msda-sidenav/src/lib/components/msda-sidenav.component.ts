@@ -152,6 +152,7 @@ export class MsdaSidenavComponent implements OnInit {
         this._dialog.open(SelectClientComponent, {
           width: '761px',
           // height: '252px',
+          panelClass: 'select-client',
           data: {
             clients: [...Object.values(this.userAppClients[item.abbreviation])],
             setHrPosition: item.setHrPosition
