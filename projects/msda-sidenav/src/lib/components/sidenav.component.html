@@ -10,13 +10,13 @@
 
     <h3 class="headerText" *ngIf="isPrivate" (click)="backButtonClick('apps')">
       <mat-icon>arrow_back</mat-icon>
-      <p class="uppercase">{{lang == 'en'?'Return to apps.gov.ge':'apps.gov.ge-ზე დაბრუნება'}}
+      <p>{{lang == 'en'?'Return to apps.gov.ge':'apps.gov.ge-ზე დაბრუნება'}}
       </p>
     </h3>
 
     <h3 class="headerText" *ngIf="!isPrivate" (click)="backButtonClick('ms')">
       <mat-icon>arrow_back</mat-icon>
-      <p class="uppercase">{{lang == 'en' ? 'Return to Citizens Portal':'მოქალაქეთა პორტალზე დაბრუნება'}}
+      <p>{{lang == 'en' ? 'Return to Citizens Portal':'მოქალაქეთა პორტალზე დაბრუნება'}}
       </p>
     </h3>
 
