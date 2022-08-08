@@ -103,6 +103,8 @@ export class MsdaSidenavComponent implements OnInit {
     let apps = [...this._sideNav.applications];
     if (this._sideNav.links)
       this.links = this._sideNav.links;
+    if (MsdaSidenavModule.currentAppAbbreviation)
+      apps = apps.filter(app => app.abbreviation !== MsdaSidenavModule.currentAppAbbreviation);
     apps = apps.map(app => {
       try {
         if (app.meta) {
@@ -204,5 +206,11 @@ export class MsdaSidenavComponent implements OnInit {
 
   get logo() {
     return `${this.imagesSourceUrl}/assets/imgs/logos/msda-logo-blue-${this.lang || 'ge'}.svg`
+  }
+  get isLendingPage() {
+    return MsdaSidenavModule.currentAppAbbreviation == 'LENDING';
+  }
+  get isAppsLendingPage() {
+    return MsdaSidenavModule.currentAppAbbreviation == 'APPS_LENDING';
   }
 }

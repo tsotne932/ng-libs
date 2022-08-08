@@ -8,13 +8,13 @@
   <mat-divider></mat-divider>
   <div class="apps">
 
-    <h3 class="headerText" *ngIf="isPrivate" (click)="backButtonClick('apps')">
+    <h3 class="headerText" *ngIf="isPrivate && !isAppsLendingPage" (click)="backButtonClick('apps')">
       <mat-icon>arrow_back</mat-icon>
       <p>{{lang == 'en'?'Return to apps.gov.ge':'apps.gov.ge-ზე დაბრუნება'}}
       </p>
     </h3>
 
-    <h3 class="headerText" *ngIf="!isPrivate" (click)="backButtonClick('ms')">
+    <h3 class="headerText" *ngIf="!isPrivate && !isLendingPage" (click)="backButtonClick('ms')">
       <mat-icon>arrow_back</mat-icon>
       <p>{{lang == 'en' ? 'Return to Citizens Portal':'მოქალაქეთა პორტალზე დაბრუნება'}}
       </p>

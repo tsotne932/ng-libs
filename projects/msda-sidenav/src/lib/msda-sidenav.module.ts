@@ -17,6 +17,7 @@ export interface SidenavConfig {
   imagesSourceUrl?: string;
   env: any,
   publicApiPreffix?: string;
+  appAbbr: string;
 }
 
 @NgModule({
@@ -48,17 +49,20 @@ export class MsdaSidenavModule {
   public static imagesSourceUrl: string = '';
   public static publicApiPreffix: string = '/api';
   public static isPrivate: boolean | undefined;
+  public static currentAppAbbreviation: string | undefined;
   public static env: 'production' | 'training' | 'staging' | 'development' = 'staging';
 
   /**
    * @param publicApiPreffix - default - '/api' .  public-api-ის prefix (საჭიროა მაშინ როდესაც proxy- ით გავდივართ public-api მეთოდებზე)
    * @param imagesSourceUrl - მისამართი სადაც განთავსებულია აპლიკაციის svg ლოგოები
+   * @param appAbbr - აპლიკაციის აბრევიატურა
    * @param env -- 'production' | 'training' | 'staging' | 'development'
    * @returns
    */
   public static forRoot(config: SidenavConfig): ModuleWithProviders<MsdaSidenavModule> {
     this.imagesSourceUrl = config.imagesSourceUrl || 'https://sso.municipal.gov.ge';
     this.publicApiPreffix = config.publicApiPreffix || '/api'
+    this.currentAppAbbreviation = config.appAbbr;
     this.env = config.env;
     return {
       ngModule: MsdaSidenavModule
