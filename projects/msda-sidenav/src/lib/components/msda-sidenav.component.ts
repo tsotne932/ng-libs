@@ -110,7 +110,7 @@ export class MsdaSidenavComponent implements OnInit {
         if (app.meta) {
           app.metaJson = JSON.parse(app.meta);
           if (app.metaJson.imgUrl) app.img = app.metaJson.imgUrl;
-          if (app.metaJson[this.userType] && app.metaJson[this.userType].url) app.url = MsdaSidenavModule.env == 'production' ? app.metaJson[this.userType].url : app.metaJson[this.userType].urlStaging;
+          if (app.metaJson[this.userType] && app.metaJson[this.userType].url) app.url = app.metaJson[this.userType].url;
           if (app.metaJson[this.userType] && app.metaJson[this.userType].name) app.name = app.metaJson[this.userType].name;
           if (app.metaJson[this.userType] && app.metaJson[this.userType].nameEn) app.nameEn = app.metaJson[this.userType].nameEn;
           if (app.metaJson[this.userType]) app.setHrPosition = app.metaJson[this.userType].setHrPosition || false;
