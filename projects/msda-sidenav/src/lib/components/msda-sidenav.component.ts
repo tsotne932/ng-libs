@@ -52,6 +52,10 @@ export class MsdaSidenavComponent implements OnInit {
     MsdaSidenavModule.isPrivate = this._isPrivate;
     if (this._isPrivate) this.userType = UserType.private;
     else this.userType = UserType.public;
+
+    if (this._isPrivate && this.clientId) {
+      this.getStarted()
+    }
   }
   _user: any;
   @Input() set user(user: any) {
@@ -72,10 +76,23 @@ export class MsdaSidenavComponent implements OnInit {
 
     this.loadApps();
   }
+  _clientId!: number;
+  @Input()
+  set clientId(value: number) {
+    this._clientId = value;
+    if (!this.isPrivate)
+      this.getStarted();
+  };
+
+
+  get clientId() {
+    return this._clientId;
+  }
 
   get user() {
     return this.user;
   }
+
   private _isPrivate: boolean | undefined;
   constructor(private _sideNav: SideNavService, private _dialog: MatDialog) {
     this.imagesSourceUrl = MsdaSidenavModule.imagesSourceUrl;
@@ -85,10 +102,19 @@ export class MsdaSidenavComponent implements OnInit {
     if (this.subscription) this.subscription.unsubscribe();
   }
 
-  async ngOnInit() {
-    await this._sideNav.loadApps();
-    this.loadApps();
 
+  async ngOnInit() {
+    ///თუ clientId  არსებობს, ესეიგი ეს მეთოდი უკვე გაეშვა ზემოთ
+    if (!this.clientId && !this.isPrivate) {
+
+      await this.getStarted();
+    }
+
+  }
+
+  async getStarted() {
+    await this._sideNav.loadApps(!this.isPrivate ? this.clientId : '');
+    this.loadApps();
   }
 
   _setPrivate() {
@@ -169,7 +195,14 @@ export class MsdaSidenavComponent implements OnInit {
   }
 
   _goPublic(item: Application) {
-    this._navigate(item.url)
+    if (item.url) {
+      if (!item.url.includes('?')) {
+        item.url = `${item.url}?clientId=` + this.clientId;
+      } else if (!item.url.includes('${clientId}')) {
+        item.url = `${item.url}&clientId=` + '${clientId}';
+      }
+    }
+    this._navigate(item.url, this.clientId)
   }
 
   _navigate(url: string, clientId?: number, applicationId?: number) {
