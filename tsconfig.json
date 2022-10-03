@@ -15,6 +15,10 @@
       "msda-sidenav": [
         "dist/msda-sidenav/msda-sidenav",
         "dist/msda-sidenav"
+      ],
+      "msda-storage": [
+        "dist/msda-storage/msda-storage",
+        "dist/msda-storage"
       ]
     },
     "experimentalDecorators": true,

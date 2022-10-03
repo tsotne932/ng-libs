@@ -1,0 +1,9 @@
+{
+  "name": "msda-storage",
+  "version": "0.1.7-test",
+  "peerDependencies": {
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  }
+}
