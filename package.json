@@ -4,7 +4,10 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build:sidenav": "ng build msda-sidenav --configuration production",
+    "build:storage": "ng build msda-storage --configuration production",
+    "publish:sidenav": "cd dist/msda-sidenav && npm publish",
+    "publish:storage": "cd dist/msda-storage && npm publish",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

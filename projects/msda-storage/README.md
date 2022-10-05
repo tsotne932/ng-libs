@@ -19,6 +19,11 @@ import { MsdaStorageModule, MsdaStorage } from 'msda-storage';
 
 function initApp( storage: MsdaStorage) {
   return async () => {
+    
+    storage.setConfig({
+      apiPrefix: '/auth' //default '/api
+    });
+
     /**
      * @param{appKeyWords}  იმ აპლიკაციების keyword-ები რომლის translate-ებსაც იყენებს აპლიკაცია
      */
