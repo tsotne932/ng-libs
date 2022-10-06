@@ -14,7 +14,6 @@ const KEYS = {
 export class MsdaStorage {
   applicationAbbrs: string[] = [];
   private _clientId?: number | null;
-  private _lang: string = 'ge';
   private _token?: string | null = '';
   private _apiPrefix: string = '/api';
   constructor(private _httpClient: HttpClient) { }
@@ -83,14 +82,13 @@ export class MsdaStorage {
    * @param {string} lang
    */
   setLang(lang: string) {
-    this._lang = lang;
     this._setLang(lang);
   }
   /**
    *  get lang
    */
-  get lang() {
-    return this._getLang() || this._lang;
+  public static get lang() {
+    return localStorage.getItem(KEYS.lang);
   }
 
   private _setLang(lang: string | null) {

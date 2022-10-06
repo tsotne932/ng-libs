@@ -1,5 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { AfterContentChecked, AfterContentInit, Component, Input, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MsdaStorage } from 'msda-storage';
 import { Subscription } from 'rxjs';
 import { MsdaSidenavModule } from '../msda-sidenav.module';
 import { SideNavService } from '../service/sidenav.service';
@@ -29,7 +30,13 @@ enum UserType {
 })
 export class MsdaSidenavComponent implements OnInit {
   imagesSourceUrl: string = '';
-  userType: UserType = UserType.public;
+
+  get userType(): UserType {
+    if(this._user && this._user.userType == 'EMPLOYEE')
+      return UserType.private;
+      else if(this.isPrivate) return UserType.private
+      else return UserType.public;
+  } 
   applications: {
     private: Application[],
     public: Application[]
@@ -47,21 +54,12 @@ export class MsdaSidenavComponent implements OnInit {
   subscription!: Subscription;
 
   links: any = {};
-  @Input() set isPrivate(val: boolean) {
-    this._isPrivate = val;
-    MsdaSidenavModule.isPrivate = this._isPrivate;
-    if (this._isPrivate) this.userType = UserType.private;
-    else this.userType = UserType.public;
-
-    if (this._isPrivate && this.clientId) {
-      this.getStarted()
-    }
-  }
+  @Input() isPrivate: boolean = false;
+ 
   _user: any;
   @Input() set user(user: any) {
     this._user = user;
     if (user && user.userType == 'EMPLOYEE') {
-      this.userType = UserType.private;
       if (user.selected.clientId) this.selectedClientId = user.selected.clientId;
       for (const [id, item] of Object.entries(user.clients)) {
         const client = item as any;
@@ -74,7 +72,7 @@ export class MsdaSidenavComponent implements OnInit {
       }
     }
 
-    this.loadApps();
+    this.getStarted();
   }
   _clientId!: number;
   @Input()
@@ -93,7 +91,6 @@ export class MsdaSidenavComponent implements OnInit {
     return this.user;
   }
 
-  private _isPrivate: boolean | undefined;
   constructor(private _sideNav: SideNavService, private _dialog: MatDialog) {
     this.imagesSourceUrl = MsdaSidenavModule.imagesSourceUrl;
   }
@@ -104,25 +101,15 @@ export class MsdaSidenavComponent implements OnInit {
 
 
   async ngOnInit() {
-    ///თუ clientId  არსებობს, ესეიგი ეს მეთოდი უკვე გაეშვა ზემოთ
     if (!this.clientId && !this.isPrivate) {
 
       await this.getStarted();
     }
-
   }
 
   async getStarted() {
     await this._sideNav.loadApps(!this.isPrivate ? this.clientId : '');
     this.loadApps();
-  }
-
-  _setPrivate() {
-    this.userType = UserType.private;
-  }
-
-  _setPublic() {
-    this.userType = UserType.public;
   }
 
   async loadApps() {
@@ -214,7 +201,7 @@ export class MsdaSidenavComponent implements OnInit {
   }
 
   public navigate(loc: string): void {
-    const token = this.isPrivate ? localStorage.getItem('private-token') : localStorage.getItem('public-token');
+    const token = MsdaStorage.token;
     // loc = this._tranformByEnv(loc);
     if (loc.includes('${token}')) {
       loc = loc.replace('${token}', token || '');
@@ -223,14 +210,14 @@ export class MsdaSidenavComponent implements OnInit {
   }
 
 
-  get isPrivate() {
-    if (this._isPrivate !== undefined) return this._isPrivate;
-    else if (MsdaSidenavModule.isPrivate !== undefined) return MsdaSidenavModule.isPrivate;
-    else return this.userType == UserType.private;
-  }
+  // get isPrivate() {
+  //   if (this._isPrivate !== undefined) return this._isPrivate;
+  //   else if (MsdaSidenavModule.isPrivate !== undefined) return MsdaSidenavModule.isPrivate;
+  //   else return this.userType == UserType.private;
+  // }
 
   get lang() {
-    return localStorage.getItem('msda-lang');
+    return MsdaStorage.lang
   }
 
   backButtonClick(key: string) {

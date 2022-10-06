@@ -12,6 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { HttpClientModule } from '@angular/common/http';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MsdaSidenavComponent } from './components/msda-sidenav.component';
+import {  MsdaStorageModule } from 'msda-storage';
 
 export interface SidenavConfig {
   imagesSourceUrl?: string;
@@ -38,7 +39,8 @@ export interface SidenavConfig {
     MatDividerModule,
     MatButtonModule,
     HttpClientModule,
-    FlexLayoutModule
+    FlexLayoutModule,
+    MsdaStorageModule
   ],
   exports: [
     MsdaSidenavComponent
