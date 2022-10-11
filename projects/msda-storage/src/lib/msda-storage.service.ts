@@ -10,12 +10,16 @@ const KEYS = {
   appVersions: 'appVersions'
 }
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class MsdaStorage {
   applicationAbbrs: string[] = [];
   private _clientId?: number | null;
   private _token?: string | null = '';
   private _apiPrefix: string = '/api';
+  loadAllTranslations: boolean = false;
+  private _translationVersions: any;
   constructor(private _httpClient: HttpClient) { }
 
   /**
@@ -25,6 +29,7 @@ export class MsdaStorage {
    */
   async loadTranslations(appKeywords: string[]) {
     if (appKeywords && appKeywords.length) {
+      this.loadAllTranslations = appKeywords.includes('*');
       this.applicationAbbrs = appKeywords;
       this._checkTranslationVersions();
     }
@@ -175,15 +180,41 @@ export class MsdaStorage {
   //translations
 
   private async _checkTranslationVersions() {
-    const versions = await this._getRemoteTranslationVersions();
-    if (versions) {
+    this._translationVersions = await this._getRemoteTranslationVersions();
+    if (this._translationVersions) {
       const i18n = this._getLocalTranslationVersions();
-      const appsTranslationsToUpdate: AppTranlationVersion = this._getOutDatedAppKeywords(versions, i18n);
-      const updatedAppTranslations = await this._getTranslations(appsTranslationsToUpdate);
-      this._updateInStorage(updatedAppTranslations);
+      if (!Object.keys(i18n).length && this.loadAllTranslations) {
+        this._loadAll();
+      } else {
+        const appsTranslationsToUpdate: AppTranlationVersion = this._getOutDatedAppKeywords(this._translationVersions, i18n);
+        const updatedAppTranslations = await this._getTranslations(appsTranslationsToUpdate);
+        this._updateInStorage(updatedAppTranslations);
+      }
     }
   }
 
+  private async _loadAll() {
+    const { result: { data } }: { result: { data: OriginalTranslation[] } } = await this._translationsPromise([])
+    const updatedTranslations: MsdaI18n = {};
+    const appTranslations: any = {};
+    
+    data.forEach(tr => {
+      tr.applications.forEach(application => {
+        if(!appTranslations[application]) appTranslations[application] = [];
+        appTranslations[application].push(tr);
+      })
+    })
+    
+    Object.keys(appTranslations).forEach(application=>{
+      const keywords = this._transformTranslations(appTranslations[application]);
+      updatedTranslations[application] = {
+        version: this._translationVersions[application] || 1,
+        keywords: keywords
+      }
+    })
+
+    this._updateInStorage(updatedTranslations);
+  }
   private async _getRemoteTranslationVersions(): Promise<AppTranlationVersion | null> {
     try {
       const { result: { data } } = await this._httpClient.get<MsdaResponse<AppTranlationVersion>>(`${this._apiPrefix}/translations/versions`).toPromise();
@@ -204,20 +235,32 @@ export class MsdaStorage {
 
   private _getOutDatedAppKeywords(versions: AppTranlationVersion, i18n: MsdaI18n): AppTranlationVersion {
     const outDated: AppTranlationVersion = {};
-    this.applicationAbbrs.forEach(abbr => {
-      if (!i18n[abbr] || i18n[abbr].version < versions[abbr]) {
-        outDated[abbr] = versions[abbr]
-      }
-    });
+    if (this.loadAllTranslations) {
+      Object.keys(i18n).forEach( abbr =>{
+        if(i18n[abbr].version < versions[abbr]){
+          outDated[abbr] = versions[abbr]
+        }
+      })
 
+    } else {
+      this.applicationAbbrs.forEach(abbr => {
+        if (!i18n[abbr] || i18n[abbr].version < versions[abbr]) {
+          outDated[abbr] = versions[abbr]
+        }
+      });
+    }
     return outDated;
+  }
+
+  private _translationsPromise(applications: string[]) {
+    return this._httpClient.post<MsdaResponse<OriginalTranslation[]>>(`${this._apiPrefix}/translations`, { data: { applications } }).toPromise();
   }
 
   private async _getTranslations(applications: AppTranlationVersion): Promise<MsdaI18n> {
     const updatedTranslations: MsdaI18n = {};
     await Promise.all(Object.keys(applications).map(async application => {
       try {
-        const { result: { data } } = await this._httpClient.post<MsdaResponse<OriginalTranslation[]>>(`${this._apiPrefix}/translations`, { data: { applications: [application] } }).toPromise();
+        const { result: { data } } = await this._translationsPromise([application])
         const keywords = this._transformTranslations(data);
         updatedTranslations[application] = {
           version: applications[application],
@@ -271,15 +314,15 @@ export class MsdaStorage {
    * set config
    * @param {Config} config  set apiConfig 
    */
-  public setConfig(config: Config){
+  public setConfig(config: Config) {
     this._apiPrefix = config.apiPrefix
   }
 }
 
 
 
-export interface Config{
-  apiPrefix:string;
+export interface Config {
+  apiPrefix: string;
 }
 export interface MsdaAppVersions {
   [x: string]: MsdaAppVersionItem
@@ -317,6 +360,7 @@ export interface MsdaI18n {
 }
 
 export interface OriginalTranslation {
+  applications: string[];
   keyword: string;
   translations: {
     ge: string;
