@@ -25,7 +25,7 @@ export class SideNavService {
 
   async loadApps(clientId: any = '') {
     try {
-      const { result: { data } } = await this._http.get<{ result: { data: any } }>(`${MsdaSidenavModule.publicApiPreffix}/um/v3/applications/byClientId?clientId=${clientId}`).toPromise();
+      const { result: { data } } = await this._http.get<{ result: { data: any } }>(`${MsdaSidenavModule.publicApiPrefix}/um/v3/applications/byClientId?clientId=${clientId}`).toPromise();
       if (data) {
         this.applications = data.apps;
         this.links = data.links;
@@ -35,7 +35,7 @@ export class SideNavService {
   }
 
   setSessionClient(clientId?: number) {
-    return this._http.post<{ result: { data: any } }>(`${MsdaSidenavModule.publicApiPreffix}/um/v3/user/session/client`, { data: { clientId } }).pipe(map(res => {
+    return this._http.post<{ result: { data: any } }>(`${MsdaSidenavModule.publicApiPrefix}/um/v3/user/session/client`, { data: { clientId } }).pipe(map(res => {
       if (res.result) {
         return res.result.data;
       } return {};
@@ -43,7 +43,7 @@ export class SideNavService {
   }
 
   logout() {
-    return this._http.delete<{ status: number }>(`${MsdaSidenavModule.publicApiPreffix}/v3/session`).pipe(
+    return this._http.delete<{ status: number }>(`${MsdaSidenavModule.publicApiPrefix}/v3/session`).pipe(
       finalize(() => {
         localStorage.removeItem(MsdaSidenavModule.isPrivate ? 'private-token' : 'public-token');
       })
@@ -59,7 +59,7 @@ export class SideNavService {
   }
 
   setHrPosition(position: any) {
-    return this._http.post<{ result: { data: any } }>(`${MsdaSidenavModule.publicApiPreffix}/um/v3/user/hr/position`, { data: { position } }).pipe(map(res => {
+    return this._http.post<{ result: { data: any } }>(`${MsdaSidenavModule.publicApiPrefix}/um/v3/user/hr/position`, { data: { position } }).pipe(map(res => {
       if (res.result) {
         return res.result.data;
       } return {};
@@ -79,13 +79,13 @@ export class SideNavService {
       },
     };
     return this._http
-      .put<any>(`${MsdaSidenavModule.publicApiPreffix}/v3/session/position`, { data: data })
+      .put<any>(`${MsdaSidenavModule.publicApiPrefix}/v3/session/position`, { data: data })
       .pipe(map(({ data }: { data: unknown }) => data));
   }
 
   public currentStatusNewOfEmployee(): Observable<any> {
     return this._http
-      .post<any>(`${MsdaSidenavModule.publicApiPreffix}/hr/employee/commission/search`, {})
+      .post<any>(`${MsdaSidenavModule.publicApiPrefix}/hr/employee/commission/search`, {})
       .pipe(
         map((response: any) => {
           if (!response || !response.result || !response.result.data) return [];

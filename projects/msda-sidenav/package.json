@@ -1,10 +1,9 @@
 {
   "name": "msda-sidenav",
-  "version": "0.5.3",
+  "version": "1.0.3",
   "peerDependencies": {
     "msda-storage": "^0.2.4"
   },
   "dependencies": {
-    "tslib": "^2.3.0"
   }
 }

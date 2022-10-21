@@ -4,7 +4,6 @@ import { MsdaStorage } from 'msda-storage';
 import { Subscription } from 'rxjs';
 import { MsdaSidenavModule } from '../msda-sidenav.module';
 import { SideNavService } from '../service/sidenav.service';
-import { SelectClientComponent } from './select-client/select-client.component';
 
 interface Application {
   abbreviation: string;
@@ -17,12 +16,22 @@ interface Application {
   url: string;
   disabled: boolean;
   setHrPosition: boolean;
+  domainType: 'multi' | 'single';
 }
 enum UserType {
   private = 'private',
   public = 'public'
 }
 
+function isSelectClientDialogScriptLoaded(url:string) {
+
+  var scripts = document.getElementsByTagName('script');
+  for (var i = scripts.length; i--;) {
+      if (scripts[i].src == url) return true;
+  }
+  return false;
+}
+const selectClientScripts = 'https://static.msda.ge/select-client-dialog/v1/main.js';
 @Component({
   selector: 'msda-sidenav',
   templateUrl: './sidenav.component.html',
@@ -32,11 +41,12 @@ export class MsdaSidenavComponent implements OnInit {
   imagesSourceUrl: string = '';
 
   get userType(): UserType {
-    if(this._user && this._user.userType == 'EMPLOYEE')
+    if (this._user && this._user.userType == 'EMPLOYEE')
       return UserType.private;
-      else if(this.isPrivate) return UserType.private
-      else return UserType.public;
-  } 
+    else if (this.isPrivate) return UserType.private
+    else return UserType.public;
+  }
+
   applications: {
     private: Application[],
     public: Application[]
@@ -50,12 +60,12 @@ export class MsdaSidenavComponent implements OnInit {
     private: ['PRIVATE', 'MULTI'],
     public: ['PUBLIC', 'MULTI']
   }
-  selectedClientId = null;
+  selectedClientId: number | null = null;
   subscription!: Subscription;
 
   links: any = {};
   @Input() isPrivate: boolean = false;
- 
+
   _user: any;
   @Input() set user(user: any) {
     this._user = user;
@@ -74,24 +84,19 @@ export class MsdaSidenavComponent implements OnInit {
 
     this.getStarted();
   }
-  _clientId!: number;
-  @Input()
-  set clientId(value: number) {
-    this._clientId = value;
-    if (!this.isPrivate)
-      this.getStarted();
-  };
-
 
   get clientId() {
-    return this._clientId;
+    return this._storage.clientId;
   }
 
   get user() {
     return this.user;
   }
 
-  constructor(private _sideNav: SideNavService, private _dialog: MatDialog) {
+  position: any;
+  clientPosition: any = {};
+
+  constructor(private _sideNav: SideNavService, private _dialog: MatDialog, private _storage: MsdaStorage) {
     this.imagesSourceUrl = MsdaSidenavModule.imagesSourceUrl;
   }
 
@@ -102,8 +107,46 @@ export class MsdaSidenavComponent implements OnInit {
 
   async ngOnInit() {
     if (!this.clientId && !this.isPrivate) {
-
       await this.getStarted();
+    }
+
+    if (this.isPrivate) {
+      await this.getPosition();
+    }
+
+    
+    let scd = document.getElementById('scd-root');
+    if(!scd) {
+      const a = document.createElement('div');
+      a.setAttribute("id", 'scd-root');
+      document.body.appendChild(a);
+    };
+
+    if(!isSelectClientDialogScriptLoaded(selectClientScripts)){
+     try{
+      const script = document.createElement('script');
+      script.setAttribute(
+        'src',
+        selectClientScripts,
+      );
+      script.setAttribute('defer', '');
+      document.head.appendChild(script);
+     } catch(er){
+      console.log(er)
+     }
+    }
+
+   
+
+  }
+
+  async getPosition() {
+    this.position = await this._sideNav.currentStatusNewOfEmployee().toPromise();
+    if (this.position) {
+      this.position.forEach((info: any) => {
+        if (!this.clientPosition[info.employee.clientId]) this.clientPosition[info.employee.clientId] = [info]
+        else this.clientPosition[info.employee.clientId].push(info);
+      })
     }
   }
 
@@ -128,18 +171,19 @@ export class MsdaSidenavComponent implements OnInit {
           if (app.metaJson[this.userType] && app.metaJson[this.userType].nameEn) app.nameEn = app.metaJson[this.userType].nameEn;
           if (app.metaJson[this.userType]) app.setHrPosition = app.metaJson[this.userType].setHrPosition || false;
           if (app.metaJson[this.userType]) app.orderPriority = app.metaJson[this.userType].orderPriority || 1000;
-        }
-        if (this.isPrivate) {
-          app.disabled = !this.userApps[app.abbreviation];
+          if (app.metaJson[this.userType]) app.domainType = app.metaJson[this.userType].domainType || 'single';
 
+          if(app.metaJson[this.userType] && app.metaJson[this.userType].disabled) app.shouldHideOnInsteadDisabled = true;
         }
+
+        app.disabled =  (this.isPrivate && !this.userApps[app.abbreviation]);
 
       } catch (err) {
         console.log(err);
       }
       return app;
     })
-    this.applications[UserType.private] = apps.filter(app => app.metaJson && this.applicationTypes[UserType.private].indexOf(app.type) > -1 && app.metaJson[UserType.private] && !app.metaJson[UserType.private].hidden).sort((a, b) => a.orderPriority - b.orderPriority)
+    this.applications[UserType.private] = apps.filter(app => app.metaJson && this.applicationTypes[UserType.private].indexOf(app.type) > -1 && app.metaJson[UserType.private] && !app.metaJson[UserType.private].hidden).filter(app => !app.metaJson[UserType.private].disabled || (app.metaJson[UserType.private].disabled &&  this.userApps[app.abbreviation])).sort((a, b) => a.orderPriority - b.orderPriority)
     this.applications[UserType.public] = apps.filter(app => app.metaJson && this.applicationTypes[UserType.public].indexOf(app.type) > -1 && app.metaJson[UserType.public] && !app.metaJson[UserType.public].hidden).sort((a, b) => a.orderPriority - b.orderPriority)
 
   }
@@ -155,28 +199,53 @@ export class MsdaSidenavComponent implements OnInit {
   }
 
 
-  _goPrivate(item: Application) {
-
-    if (this.userAppClients[item.abbreviation]) {
-      const keys = Object.keys(this.userAppClients[item.abbreviation]);
-      if (keys.length == 1 && keys[0] == this.selectedClientId && !item.setHrPosition) {
-
-        this._navigate(item.url, this.selectedClientId || undefined, item.id);
+  private async _checkHRPositions(item: Application, clientId: number) {
+    if (item.setHrPosition) { //თუ საჭიროა HR 
+      if(!this.clientPosition[clientId] ){
+        // access_denied
+      } else if (this.clientPosition[clientId].length > 1) { // თუ ამ კლიენტში ერთზე მეტი თანამდებობა მაქვს
+        this._openDialog(item, clientId);
+      } else { // თუ ამ კლიენტში ერთი თანამდებობა მაქვს 
+          await this._sideNav.setSessionClient(clientId).toPromise();
+          await this._sideNav.changeSelectedPosition(this.clientPosition[clientId]).toPromise();
+          this._navigate(item.url, clientId || undefined, item.id, item.domainType);
       }
-      else {
-        this._dialog.open(SelectClientComponent, {
-          width: '761px',
-          // height: '252px',
-          panelClass: 'select-client',
-          data: {
-            clients: [...Object.values(this.userAppClients[item.abbreviation])],
-            setHrPosition: item.setHrPosition
-          }
-        }).afterClosed().subscribe((clientId: any) => {
-          if (clientId) {
-            this._navigate(item.url, clientId || undefined, item.id);
-          }
-        })
+    } else { // თუ HR არ სჭირდება 
+      await this._sideNav.setSessionClient(clientId).toPromise();
+      this._navigate(item.url, clientId || undefined, item.id, item.domainType);
+    }
+  }
+
+  _goPrivate(item: Application) {
+    if (!this.selectedClientId) {
+      return;
+    } else if (this.userAppClients[item.abbreviation]) {
+      if ((this.userAppClients[item.abbreviation] || {})[this.selectedClientId]) { // რომელი კლიენტიც არჩეული მაქვს იქ ჩართულია ეს აპლიკაცია
+        this._checkHRPositions(item, this.selectedClientId);
+      } else if (this.userAppClients[item.abbreviation].length == 1) {// რომელი კლიენტიც არჩეული მაქვს იქ ჩართულია არაა ეს აპლიკაცია, და სხვა მხოლოდ ერთ კლიენტში მაქვს ჩართული
+        this._checkHRPositions(item, Number(Object.keys(this.userAppClients[item.abbreviation])[0]));
+      } else { // რომელი კლიენტიც არჩეული მაქვს იქ ჩართულია არაა ეს აპლიკაცია და სხვა რამდენიმე კლიენტშია ჩართული ეს აპლიკაცია
+        this._openDialog(item);
+      }
+    }
+  }
+
+  _openDialog(item: Application, selectedClientId?:number){
+    // @ts-ignore
+    window.showSelectClientDialog(
+      item.abbreviation, //application keyword abbreviation
+      MsdaStorage.token, //session-token from Local Storage or Session Object
+      MsdaSidenavModule.publicApi, //public-api address, example: public-api
+      item.setHrPosition, //true is Position is not aplicable for current project, otherwise false
+      selectedClientId //priority ClientId if necessary
+    );
+    
+     //@ts-ignore
+     window.onSelectClient = (clientId :number, selectedPosition:any) => {
+      console.log(clientId, "client")
+      console.log(selectedPosition, "client")
+         if (clientId) {
+          this._navigate(item.url, clientId || undefined, item.id, item.domainType);
       }
     }
   }
@@ -189,24 +258,28 @@ export class MsdaSidenavComponent implements OnInit {
         item.url = `${item.url}&clientId=` + '${clientId}';
       }
     }
-    this._navigate(item.url, this.clientId)
+    
+    this._navigate(item.url, this.clientId, undefined, item.domainType)
   }
 
-  _navigate(url: string, clientId?: number, applicationId?: number) {
+  _navigate(url: string, clientId?: number | null, applicationId?: number, domainType?: string) {
     if (clientId)
       url = url.replace('${clientId}', clientId.toString())
     if (applicationId)
       url = url.replace('${applicationId}', applicationId.toString());
-    this.navigate(url)
+    this.navigate(url, domainType)
   }
 
-  public navigate(loc: string): void {
+  public navigate(loc: string, domainType?: string): void {
     const token = MsdaStorage.token;
     // loc = this._tranformByEnv(loc);
-    if (loc.includes('${token}')) {
-      loc = loc.replace('${token}', token || '');
-      location.href = loc;
-    } else location.href = `${loc}?token=${token}`
+    if(domainType && domainType == 'multi'){
+      if (loc.includes('${token}')) {
+        loc = loc.replace('${token}', token || '');
+      } else loc = `${loc}?token=${token}`
+    }
+
+    location.href = loc;
   }
 
 
@@ -221,7 +294,7 @@ export class MsdaSidenavComponent implements OnInit {
   }
 
   backButtonClick(key: string) {
-    this.navigate(this.links[key][MsdaSidenavModule.env]);
+    this.navigate(this.links[key][MsdaSidenavModule.env], undefined);
   }
 
   get logo() {
