@@ -23,11 +23,9 @@
     <mat-divider class="sub-divider" *ngIf="!isLendingPage && !isAppsLendingPage"></mat-divider>
     <div class="applications" fxLayout="row" fxLayoutAlign="start center" *ngFor="let item of applications[userType]"
       [ngClass]="{'disabled':item.disabled}" (click)="go(item)">
-      <img [src]="imagesSourceUrl + (item.img || '/assets/imgs/logos/'+item.abbreviation.toUpperCase() + '.svg')"
+      <img [src]="(item.img || imagesSourceUrl + '/assets/imgs/logos/'+item.abbreviation.toUpperCase() + '.svg')"
         alt="">
       <p class="mb-0">{{ lang == 'en' ? item.nameEn : item.name }}</p>
     </div>
   </div>
 </div>
-<script  src="https://static.msda.ge/client-select-dialog/572.js" defer></script>
-<script  src="https://static.msda.ge/client-select-dialog/main.js" defer></script>

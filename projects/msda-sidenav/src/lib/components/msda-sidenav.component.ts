@@ -306,4 +306,5 @@ export class MsdaSidenavComponent implements OnInit {
   get isAppsLendingPage() {
     return MsdaSidenavModule.currentAppAbbreviation == 'APPS_LENDING';
   }
+
 }
