@@ -12,7 +12,7 @@ interface Application {
   nameEn: string;
   description: string;
   meta: any;
-  img: string;
+  imgUrl: string;
   url: string;
   disabled: boolean;
   setHrPosition: boolean;
