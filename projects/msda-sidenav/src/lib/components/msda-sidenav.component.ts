@@ -202,7 +202,7 @@ export class MsdaSidenavComponent implements OnInit {
   private async _checkHRPositions(item: Application, clientId: number) {
     if (item.setHrPosition) { //თუ საჭიროა HR 
       if(!this.clientPosition[clientId] ){
-        // access_denied
+        this._openDialog(item, clientId);
       } else if (this.clientPosition[clientId].length > 1) { // თუ ამ კლიენტში ერთზე მეტი თანამდებობა მაქვს
         this._openDialog(item, clientId);
       } else { // თუ ამ კლიენტში ერთი თანამდებობა მაქვს 
@@ -217,7 +217,6 @@ export class MsdaSidenavComponent implements OnInit {
   }
 
   _goPrivate(item: Application) {
-    debugger
     if (!this.selectedClientId) {
       return;
     } else if (this.userAppClients[item.abbreviation]) {
