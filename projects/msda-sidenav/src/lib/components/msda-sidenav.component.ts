@@ -31,7 +31,7 @@ function isSelectClientDialogScriptLoaded(url:string) {
   }
   return false;
 }
-const selectClientScripts = 'https://static.msda.ge/select-client-dialog/v1/main.js';
+const selectClientScripts = 'https://static.msda.ge/select-client-dialog/v1.1/main.js';
 @Component({
   selector: 'msda-sidenav',
   templateUrl: './sidenav.component.html',
@@ -217,12 +217,13 @@ export class MsdaSidenavComponent implements OnInit {
   }
 
   _goPrivate(item: Application) {
+    debugger
     if (!this.selectedClientId) {
       return;
     } else if (this.userAppClients[item.abbreviation]) {
       if ((this.userAppClients[item.abbreviation] || {})[this.selectedClientId]) { // რომელი კლიენტიც არჩეული მაქვს იქ ჩართულია ეს აპლიკაცია
         this._checkHRPositions(item, this.selectedClientId);
-      } else if (this.userAppClients[item.abbreviation].length == 1) {// რომელი კლიენტიც არჩეული მაქვს იქ ჩართულია არაა ეს აპლიკაცია, და სხვა მხოლოდ ერთ კლიენტში მაქვს ჩართული
+      } else if (Object.keys(this.userAppClients[item.abbreviation]).length == 1) {// რომელი კლიენტიც არჩეული მაქვს იქ ჩართულია არაა ეს აპლიკაცია, და სხვა მხოლოდ ერთ კლიენტში მაქვს ჩართული
         this._checkHRPositions(item, Number(Object.keys(this.userAppClients[item.abbreviation])[0]));
       } else { // რომელი კლიენტიც არჩეული მაქვს იქ ჩართულია არაა ეს აპლიკაცია და სხვა რამდენიმე კლიენტშია ჩართული ეს აპლიკაცია
         this._openDialog(item);
@@ -236,8 +237,9 @@ export class MsdaSidenavComponent implements OnInit {
       item.abbreviation, //application keyword abbreviation
       MsdaStorage.token, //session-token from Local Storage or Session Object
       MsdaSidenavModule.publicApi, //public-api address, example: public-api
-      item.setHrPosition, //true is Position is not aplicable for current project, otherwise false
-      selectedClientId //priority ClientId if necessary
+      !item.setHrPosition, //true is Position is not aplicable for current project, otherwise false
+      selectedClientId, //priority ClientId if necessary
+      true
     );
     
      //@ts-ignore

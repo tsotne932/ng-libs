@@ -1,6 +1,6 @@
 {
   "name": "msda-sidenav",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "peerDependencies": {
     "msda-storage": "^0.2.4"
   },
