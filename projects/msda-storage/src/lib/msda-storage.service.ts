@@ -7,7 +7,8 @@ const KEYS = {
   token: 'session-token',
   lang: 'lang',
   clientId: 'clientId',
-  appVersions: 'appVersions'
+  appVersions: 'appVersions',
+  orgClientId: 'orgClientId'
 }
 
 @Injectable({
@@ -17,6 +18,7 @@ export class MsdaStorage {
   applicationAbbrs: string[] = [];
   private _clientId?: number | null;
   private _token?: string | null = '';
+  private _orgClientId?: number | null;
   private _apiPrefix: string = '/api';
   loadAllTranslations: boolean = false;
   private _translationVersions: any;
@@ -174,9 +176,44 @@ export class MsdaStorage {
     return this._httpClient.post<MsdaResponse<any>>(`${this._apiPrefix}/um/v3/user/session/client`, { data: { clientId } });
   }
 
+  /**
+   * set orgClientId to storage
+   * @param {number} orgClientId
+   */
+   async setOrgClientId(orgClientId: number | null, setInSession?: boolean) {
+    if (setInSession) {
+      try {
+        await this._setSessionClient(orgClientId).toPromise();
+        return { success: this._setOrgClientId(orgClientId) };
+      } catch (error) {
+        return { success: false, error };
+      }
+    }
+    return { success: this._setOrgClientId(orgClientId) };
+  }
 
 
+  private _setOrgClientId(_orgClientId: number | null) {
+    this._orgClientId = _orgClientId;
+    if (_orgClientId)
+      localStorage.setItem(KEYS.orgClientId, _orgClientId.toString());
+    else localStorage.removeItem(KEYS.orgClientId);
+    return true;
+  }
 
+  private _getOrgClientId() {
+    try {
+      this._orgClientId = Number(localStorage.getItem(KEYS.orgClientId));
+      return this._orgClientId;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
+  get orgClientId(){
+    return this._getOrgClientId();
+  }
   //translations
 
   private async _checkTranslationVersions() {
