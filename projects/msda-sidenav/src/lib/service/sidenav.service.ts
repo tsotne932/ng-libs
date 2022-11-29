@@ -25,7 +25,7 @@ export class SideNavService {
 
   async loadApps(clientId: any = '') {
     try {
-      const { result: { data } } = await this._http.get<{ result: { data: any } }>(`${MsdaSidenavModule.publicApiPrefix}/um/v3/applications/byClientId?clientId=${clientId}`).toPromise();
+      const { result: { data } } = await this._http.get<{ result: { data: any } }>(`${MsdaSidenavModule.publicApiPrefix}/um/v3/applications/byClientId?clId=${clientId}`).toPromise();
       if (data) {
         this.applications = data.apps;
         this.links = data.links;

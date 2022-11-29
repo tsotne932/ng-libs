@@ -32,6 +32,8 @@ function isSelectClientDialogScriptLoaded(url:string) {
   return false;
 }
 const selectClientScripts = 'https://static.msda.ge/select-client-dialog/v1.1/main.js';
+const SUPER_POSITION_PERMISSION = 'CHA.ACCESS_WITHOUT_POSITION';
+
 @Component({
   selector: 'msda-sidenav',
   templateUrl: './sidenav.component.html',
@@ -60,7 +62,7 @@ export class MsdaSidenavComponent implements OnInit {
     private: ['PRIVATE', 'MULTI'],
     public: ['PUBLIC', 'MULTI']
   }
-  selectedClientId: number | null = null;
+  _selectedClientId: number | null = null;
   subscription!: Subscription;
 
   links: any = {};
@@ -70,7 +72,7 @@ export class MsdaSidenavComponent implements OnInit {
   @Input() set user(user: any) {
     this._user = user;
     if (user && user.userType == 'EMPLOYEE') {
-      if (user.selected.clientId) this.selectedClientId = user.selected.clientId;
+      if (user.selected.clientId) this._storage.setClientId(user.selected.clientId);
       for (const [id, item] of Object.entries(user.clients)) {
         const client = item as any;
         Object.keys(client.applications || {}).forEach(key => {
@@ -79,10 +81,18 @@ export class MsdaSidenavComponent implements OnInit {
           if (!this.userAppClients[key]) this.userAppClients[key] = {};
           this.userAppClients[key][client.id] = client;
         })
+       
+        if((client.permissions || []).includes(SUPER_POSITION_PERMISSION)){
+          this.clientSuperPositions.push(client.id)
+        }
       }
     }
 
     this.getStarted();
+  }
+
+  get selectedClientId(){
+    return this._storage.clientId || this._user?.selected?.clientId;
   }
 
   get clientId() {
@@ -95,6 +105,7 @@ export class MsdaSidenavComponent implements OnInit {
 
   position: any;
   clientPosition: any = {};
+  clientSuperPositions: number[] = [];
 
   constructor(private _sideNav: SideNavService, private _dialog: MatDialog, private _storage: MsdaStorage) {
     this.imagesSourceUrl = MsdaSidenavModule.imagesSourceUrl;
@@ -198,10 +209,15 @@ export class MsdaSidenavComponent implements OnInit {
     else this._goPublic(item);
   }
 
-
+  // super_position
+  // ერთი თანამდებობა თუ აქვს მხოლოდ მაშნ ეგრევე ვუშებ 
   private async _checkHRPositions(item: Application, clientId: number) {
     if (item.setHrPosition) { //თუ საჭიროა HR 
-      if(!this.clientPosition[clientId] ){
+      
+      if(item.abbreviation == 'CHA' && !this.clientPosition[clientId] && this.clientSuperPositions.includes(clientId)) { //თუ დანიშვნა არ მაქვს ამ კლიენტში მაგრამ super_position მაქვს აქვე
+          await this._sideNav.setSessionClient(clientId).toPromise();
+          this._navigate(item.url, clientId || undefined, item.id, item.domainType);
+      } else if(!this.clientPosition[clientId]) { // თუ თანამდებობდა არაა ამ კლიენტში 
         this._openDialog(item, clientId);
       } else if (this.clientPosition[clientId].length > 1) { // თუ ამ კლიენტში ერთზე მეტი თანამდებობა მაქვს
         this._openDialog(item, clientId);
@@ -214,16 +230,24 @@ export class MsdaSidenavComponent implements OnInit {
       await this._sideNav.setSessionClient(clientId).toPromise();
       this._navigate(item.url, clientId || undefined, item.id, item.domainType);
     }
-  }
+  } 
 
   _goPrivate(item: Application) {
+    debugger
     if (!this.selectedClientId) {
       return;
     } else if (this.userAppClients[item.abbreviation]) {
-      if ((this.userAppClients[item.abbreviation] || {})[this.selectedClientId]) { // რომელი კლიენტიც არჩეული მაქვს იქ ჩართულია ეს აპლიკაცია
+
+      let filteredUserAppClients = new Set(Object.keys(this.userAppClients[item.abbreviation]).map(c=>Number(c)));
+      if(item.setHrPosition) {
+        let toSet =  Object.keys(this.clientPosition).map(c=>Number(c))
+         if(item.abbreviation == 'CHA') toSet =  [...Object.keys(this.clientPosition).map(c=>Number(c)), ...this.clientSuperPositions]
+         filteredUserAppClients = new Set(toSet);
+      }
+      if (filteredUserAppClients.has(this.selectedClientId)) { // რომელი კლიენტიც არჩეული მაქვს იქ ჩართულია ეს აპლიკაცია
         this._checkHRPositions(item, this.selectedClientId);
-      } else if (Object.keys(this.userAppClients[item.abbreviation]).length == 1) {// რომელი კლიენტიც არჩეული მაქვს იქ ჩართულია არაა ეს აპლიკაცია, და სხვა მხოლოდ ერთ კლიენტში მაქვს ჩართული
-        this._checkHRPositions(item, Number(Object.keys(this.userAppClients[item.abbreviation])[0]));
+      } else if (filteredUserAppClients.size == 1) {// რომელი კლიენტიც არჩეული მაქვს იქ ჩართულია არაა ეს აპლიკაცია, და სხვა მხოლოდ ერთ კლიენტში მაქვს ჩართული
+        this._checkHRPositions(item, Array.from(filteredUserAppClients)[0]);
       } else { // რომელი კლიენტიც არჩეული მაქვს იქ ჩართულია არაა ეს აპლიკაცია და სხვა რამდენიმე კლიენტშია ჩართული ეს აპლიკაცია
         this._openDialog(item);
       }
