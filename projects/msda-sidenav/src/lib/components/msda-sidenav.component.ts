@@ -242,6 +242,7 @@ export class MsdaSidenavComponent implements OnInit {
       if(item.setHrPosition) {
         let toSet =  Object.keys(this.clientPosition).map(c=>Number(c))
          if(item.abbreviation == 'CHA') toSet =  [...Object.keys(this.clientPosition).map(c=>Number(c)), ...this.clientSuperPositions]
+         toSet = toSet.filter(i=>this.userAppClients[item.abbreviation][i]);
          filteredUserAppClients = new Set(toSet);
       }
       if (filteredUserAppClients.has(this.selectedClientId)) { // რომელი კლიენტიც არჩეული მაქვს იქ ჩართულია ეს აპლიკაცია
