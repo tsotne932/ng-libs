@@ -217,13 +217,13 @@ export class MsdaSidenavComponent implements OnInit {
       if(item.abbreviation == 'CHA' && !this.clientPosition[clientId] && this.clientSuperPositions.includes(clientId)) { //თუ დანიშვნა არ მაქვს ამ კლიენტში მაგრამ super_position მაქვს აქვე
           await this._sideNav.setSessionClient(clientId).toPromise();
           this._navigate(item.url, clientId || undefined, item.id, item.domainType);
-      } else if(!this.clientPosition[clientId]) { // თუ თანამდებობდა არაა ამ კლიენტში 
+      } else if(!this.clientPosition[clientId] || !this.clientPosition[clientId].length) { // თუ თანამდებობდა არაა ამ კლიენტში 
         this._openDialog(item, clientId);
       } else if (this.clientPosition[clientId].length > 1) { // თუ ამ კლიენტში ერთზე მეტი თანამდებობა მაქვს
         this._openDialog(item, clientId);
       } else { // თუ ამ კლიენტში ერთი თანამდებობა მაქვს 
           await this._sideNav.setSessionClient(clientId).toPromise();
-          await this._sideNav.changeSelectedPosition(this.clientPosition[clientId]).toPromise();
+          await this._sideNav.changeSelectedPosition(this.clientPosition[clientId][0]).toPromise();
           this._navigate(item.url, clientId || undefined, item.id, item.domainType);
       }
     } else { // თუ HR არ სჭირდება 
