@@ -117,15 +117,18 @@ export class MsdaSidenavComponent implements OnInit {
 
 
   async ngOnInit() {
-    if (!this.clientId && !this.isPrivate) {
-      await this.getStarted();
-    }
+    try {
+      if (!this.clientId && !this.isPrivate) {
+        await this.getStarted();
+      }
 
-    if (this.isPrivate) {
-      await this.getPosition();
-    }
-
-    
+      if (this.isPrivate) {
+        await this.getPosition();
+      }
+    } catch(err) {
+      //ignore
+    } 
+  
     let scd = document.getElementById('scd-root');
     if(!scd) {
       const a = document.createElement('div');
@@ -146,9 +149,7 @@ export class MsdaSidenavComponent implements OnInit {
       console.log(er)
      }
     }
-
    
-
   }
 
   async getPosition() {
