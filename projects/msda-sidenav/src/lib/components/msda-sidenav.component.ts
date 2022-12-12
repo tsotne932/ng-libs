@@ -86,6 +86,9 @@ export class MsdaSidenavComponent implements OnInit {
           this.clientSuperPositions.push(client.id)
         }
       }
+    } else {
+      this.userApps = {};
+      this.userAppClients = {};
     }
 
     this.getStarted();
@@ -107,8 +110,9 @@ export class MsdaSidenavComponent implements OnInit {
   clientPosition: any = {};
   clientSuperPositions: number[] = [];
 
-  constructor(private _sideNav: SideNavService, private _dialog: MatDialog, private _storage: MsdaStorage) {
+  constructor(private _sideNav: SideNavService, private _storage: MsdaStorage) {
     this.imagesSourceUrl = MsdaSidenavModule.imagesSourceUrl;
+    this._storage.setConfig({ apiPrefix: MsdaSidenavModule.publicApiPrefix })
   }
 
   ngOnDestroy(): void {
@@ -216,19 +220,19 @@ export class MsdaSidenavComponent implements OnInit {
     if (item.setHrPosition) { //თუ საჭიროა HR 
       
       if(item.abbreviation == 'CHA' && !this.clientPosition[clientId] && this.clientSuperPositions.includes(clientId)) { //თუ დანიშვნა არ მაქვს ამ კლიენტში მაგრამ super_position მაქვს აქვე
-          await this._sideNav.setSessionClient(clientId).toPromise();
+          await this._storage.setClientId(clientId, true);
           this._navigate(item.url, clientId || undefined, item.id, item.domainType);
       } else if(!this.clientPosition[clientId] || !this.clientPosition[clientId].length) { // თუ თანამდებობდა არაა ამ კლიენტში 
         this._openDialog(item, clientId);
       } else if (this.clientPosition[clientId].length > 1) { // თუ ამ კლიენტში ერთზე მეტი თანამდებობა მაქვს
         this._openDialog(item, clientId);
       } else { // თუ ამ კლიენტში ერთი თანამდებობა მაქვს 
-          await this._sideNav.setSessionClient(clientId).toPromise();
+        await this._storage.setClientId(clientId, true);
           await this._sideNav.changeSelectedPosition(this.clientPosition[clientId][0]).toPromise();
           this._navigate(item.url, clientId || undefined, item.id, item.domainType);
       }
     } else { // თუ HR არ სჭირდება 
-      await this._sideNav.setSessionClient(clientId).toPromise();
+      await this._storage.setClientId(clientId, true);
       this._navigate(item.url, clientId || undefined, item.id, item.domainType);
     }
   } 

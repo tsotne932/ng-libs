@@ -14,7 +14,7 @@ import { MsdaSidenavComponent } from './components/msda-sidenav.component';
 import { MsdaStorageModule } from 'msda-storage';
 
 export interface SidenavConfig {
-  imagesSourceUrl?: string;
+  imagesSourceUrl: string;
   env: any,
   publicApiPrefix?: string;
   publicApi: string;
@@ -62,7 +62,7 @@ export class MsdaSidenavModule {
    * @returns
    */
   public static forRoot(config: SidenavConfig): ModuleWithProviders<MsdaSidenavModule> {
-    this.imagesSourceUrl = config.imagesSourceUrl || 'https://sso.municipal.gov.ge';
+    this.imagesSourceUrl = config.imagesSourceUrl;
     this.publicApi = config.publicApi || ''
     this.publicApiPrefix = config.publicApiPrefix || '/api'
     this.currentAppAbbreviation = config.appAbbr;
