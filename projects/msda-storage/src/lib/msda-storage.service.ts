@@ -33,7 +33,7 @@ export class MsdaStorage {
     if (appKeywords && appKeywords.length) {
       this.loadAllTranslations = appKeywords.includes('*');
       this.applicationAbbrs = appKeywords;
-      this._checkTranslationVersions();
+      await this._checkTranslationVersions();
     }
   }
 
